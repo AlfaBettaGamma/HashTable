@@ -14,7 +14,7 @@ class HashTable:
                 index = 0
                 return index
             else:
-                index += (11 * (i + 1))
+                index += 17 * (i + 1)
         if self.size != 0:
             index = index % self.size
         return index
