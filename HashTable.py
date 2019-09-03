@@ -1,139 +1,61 @@
-class Node:
-    def __init__(self, v):
-        self.value = v
-        self.prev = None
-        self.next = None
+class HashTable:
+    def __init__(self, sz, stp):
+        self.size = sz
+        self.step = stp
+        self.slots = [None] * self.size
 
-class OrderedList:
-    def __init__(self, asc):
-        self.head = None
-        self.tail = None
-        self.__ascending = asc
-
-    def compare(self, v1, v2):
-        if v1.value < v2.value:
-            return -1
-        elif v1.value > v2.value :
-            return 1
-        else:
-            return 0
-        # -1 если v1 < v2
-        # 0 если v1 == v2
-        # +1 если v1 > v2
-
-    def print_all_nodes(self):
-        node = self.head
-        while node != None:
-            print(node.value)
-            node = node.next
-
-    def add(self, value):
-        new_node = Node(value)
-        if self.head == self.tail is None:
-            self.head = new_node
-            self.tail = new_node
-            return
-        node = self.head
-        while node is not None:
-            if self.__ascending and self.compare(new_node, node) <= 0 or not self.__ascending and self.compare(
-                    new_node, node) >= 0:
-                if node.prev is None:
-                    # Голова
-                    new_node.next = node
-                    node.prev = new_node
-                    self.head = new_node
-                else:
-                    # Серединна
-                    node.prev.next = new_node
-                    new_node.prev = node.prev
-                    new_node.next = node
-                    node.prev = new_node
-                return
-            elif node.next is None:
-                # Хвост
-                node.next = new_node
-                new_node.prev = node
-                self.tail = new_node
-                return
-            node = node.next    
-        # автоматическая вставка value 
-        # в нужную позицию
-
-    def find(self, val):
-        node = self.head
-        while node is not None:
-            if node.value == val:
-                return node
-            node = node.next
-        return None # здесь будет ваш код
-
-    def delete(self, val):
-        node = self.head
-        while node is not None:
-            if node.value == val:
-                if node == self.head:
-                    self.head = self.head.next
-                    if self.head is not None:
-                        self.head.prev = None
-                if node == self.tail:
-                    self.tail = node.prev
-                    if self.tail is not None:
-                        self.tail.next = None
-                if node.prev is not None:
-                    node.prev.next = node.next
-                if node.next is not None:
-                    node.next.prev = node.prev
-                node_pointer = node
-                node = node.next
-                del node_pointer
-                return
+    def hash_fun(self, value):
+        index = 0
+        val = str(value)
+        for i in range(len(val)):
+            if int(val[i]) != 0:
+                index += int(val[i]) * (i+1)
+            elif int(val) == 0:
+                index = 0
+                return index
             else:
-                node = node.next
-        return 'Удаляемого элемента не было'
+                index += (11 * (i + 1))
+        if self.size != 0:
+            index = index % self.size
+        return index
 
-    def find(self, val):
-        node = self.head
-        while node is not None:
-            if node.value == val:
-                return node
-            node = node.next
+    def seek_slot(self, value):
+        x = self.size - 1
+        index = self.hash_fun(value)
+        if x == 0:
+            if self.slots[index] is None:
+                return index
+        for i in range(self.size):
+            if self.slots[index] is None:
+                return index
+            else:
+                index += self.step
+                while index > x:
+                    if x == 0:
+                        index -= 1
+                    index -= x
+                if self.slots[index] is None:
+                    return index
         return None
 
-    def clean(self, asc):
-        self.__ascending = asc
-        self.head = None
-        self.tail = None
-        pass # здесь будет ваш код
-
-    def len(self):
-        self.leng = 0
-        if(self.head is None):
-            return self.leng
-        node = self.head
-        while node is not None:
-            node = node.next
-            self.leng +=1
-        return self.leng # здесь будет ваш код 
-
-    def get_all(self):
-        r = []
-        node = self.head
-        while node != None:
-            r.append(node)
-            node = node.next
-        return r
-
-class OrderedStringList(OrderedList):
-    def __init__(self, asc):
-        self.head = None
-        self.tail = None
-        super(OrderedStringList, self).__init__(asc)
-
-    def compare(self, v1, v2):
-        if v1.value.strip() < v2.value.strip():
-            return -1
-        elif v1.value.strip() > v2.value.strip():
-            return 1
+    def put(self, value):
+        x = self.seek_slot(value)
+        if x is not None:
+            self.slots[x] = value
+            return x
         else:
-            return 0
-        # переопределённая версия для строк
+            return None
+
+    def find(self, value):
+        x = self.size - 1
+        index = self.hash_fun(value)
+        for i in range(self.size):
+            if self.slots[index] == value:
+                return index
+            else:
+                index += self.step
+                while index > x:
+                    index -= x
+                if self.slots[index] == value:
+                    return index
+        return None
